@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Temperature_moyenne_annuelle</title>
+<style>
+body{
+    font-family:Arial
+}
+circle{
+    stroke-width:2
+}
+text{
+    text-anchor:middle;
+    font-size:0.7em;
+    dominant-baseline:middle;
+}
+</style>
+<style>
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+</style>
+<body>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="http://code.highcharts.com/maps/highmaps.js"></script>
+<script src="http://code.highcharts.com/maps/modules/data.js"></script>
+<script src="http://code.highcharts.com/maps/modules/exporting.js"></script>
+
+
+
+    <div id="maps" style="width: 650px; height: 650px; "></div>
+
+
+
+<script src="http://www.comeetie.fr/ERC/Seance4/Correction/d3.v3.min.js" charset="utf-8"></script>
+
+<script>
+
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 1000 - margin.top - margin.bottom;
+
+
+
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var dataMaps=[];
+
+d3.csv("Temperature.csv", function(error, data) {
+  var ageNames = d3.keys(data[0]).filter(function(key) { return (key !== "Country" && key !== "Ndepartement" && key !=="Serie" && key !=="Unite") ; });
+
+  data.forEach(function(d) {
+    dataMaps.push({key: d.Ndepartement, value: +d.X2012});
+    d.ages = ageNames.map(function(name) { return {name: name, value: +d[name]}; });
+    d.ages = d.ages[10]
+  });
+console.log(data);
+console.log(dataMaps);  
+
+});
+
+
+d3.json('fr-FR.DEPT.json', function(dept) {
+        Highcharts.Map({
+            chart: {
+                renderTo: "maps",
+            },
+            title : {
+                text : ' Temperature Moyenne Annuelle'
+            },
+          //  bouton pour zoom
+            mapNavigation: {
+                enabled: true,
+                buttonOptions: {
+                    verticalAlign: 'bottom'
+                }
+            },
+
+            colorAxis: {
+                //min: 1,
+                // max: 1000,
+                //minColor: '#0000FF',
+                //maxColor: '#FF0000',
+                startOnTick: false,
+                endOnTick: false,
+                //type: 'logarithmic',
+                stops: [
+                    [0, '#64E572'],     //1
+                    [0.6, '#DDDF00'],   //3
+                    [0.9, '#ED561B']    //2
+                ]
+            },
+            tooltip: {
+                formatter: function() {
+                    return '<a>'+this.key+'<br>'+this.series.name+' : </a><b>'+this.point.value+'</b>';
+                }
+            },
+
+            series : [{
+                data : dataMaps,
+                mapData: dept,
+                joinBy: ['key', 'key'],
+                name: 'T moyenne annuelle',
+
+            }]
+        });
+});
+</script>
